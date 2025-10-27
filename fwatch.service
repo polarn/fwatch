@@ -1,0 +1,24 @@
+[Unit]
+Description=fwatch - Automatic file organizer
+Documentation=https://github.com/polarn/fwatch
+After=network.target
+
+[Service]
+Type=simple
+# Use absolute path to the fwatch binary
+ExecStart=/usr/local/bin/fwatch
+
+# Restart policy
+Restart=always
+RestartSec=10
+
+# Security hardening (optional but recommended)
+NoNewPrivileges=true
+PrivateTmp=true
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

@@ -28,5 +28,16 @@ go.work.sum
 .env
 
 # Editor/IDE
-# .idea/
-# .vscode/
+.idea/
+.vscode/
+.claude/
+
+# Binary
+fwatch
+
+# Config
+config.yaml
+
+# Logs
+*.log
+

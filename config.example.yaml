@@ -1,0 +1,22 @@
+# fwatch configuration file
+# Copy this to config.yaml and customize
+
+# Directory to watch for new files
+watch_dir: "/home/your_username/Downloads"
+
+# File type routing rules
+# Extensions should include the dot (e.g., ".zip", ".pdf")
+rules:
+  - extensions: [".zip"]
+    destination: "/home/user/zip-archives"
+  - extensions: [".deb"]
+    destination: "/home/user/debian"
+  - extensions: [".pdf", ".epub", ".mobi"]
+    destination: "/home/your_username/Documents/Books"
+  - extensions: [".jpg", ".jpeg", ".png", ".gif"]
+    destination: "/home/your_username/Pictures"
+  - extensions: [".mp3", ".flac", ".wav"]
+    destination: "/home/your_username/Music"
+
+# Optional: Create destination directories if they don't exist
+create_dirs: true

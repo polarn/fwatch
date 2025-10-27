@@ -1,0 +1,96 @@
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+    - go generate ./...
+
+builds:
+  - id: fwatch
+    binary: fwatch
+    main: main.go
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+
+archives:
+  - formats:
+      - tar.gz
+    # this name template makes the OS and Arch compatible with the results of `uname`.
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    files:
+      - LICENSE
+      - README.md
+      - config.example.yaml
+      - fwatch.service
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  use: github-native
+
+release:
+  github:
+    owner: polarn
+    name: fwatch
+  draft: false
+  prerelease: auto
+  mode: append
+  header: |
+    ## fwatch {{ .Tag }} ({{ .Date }})
+
+    A lightweight, configurable file organizer that automatically moves files to designated folders based on their extensions.
+
+    ### Installation
+
+    **Arch Linux (AUR):**
+    ```bash
+    yay -S fwatch-bin
+    ```
+
+    **Manual Installation:**
+    Download the appropriate binary for your platform below.
+
+# AUR publishing configuration
+aurs:
+  - name: fwatch-bin
+    homepage: "https://github.com/polarn/fwatch"
+    description: "A lightweight, configurable file organizer that automatically moves files based on their extensions"
+    maintainers:
+      - "Marcus Johansson <polarn@gmail.com>"
+    license: "Apache-2.0"
+    private_key: "{{ .Env.AUR_KEY }}"
+    git_url: "ssh://aur@aur.archlinux.org/fwatch-bin.git"
+    skip_upload: auto
+    package: |-
+      # bin
+      install -Dm755 "./fwatch" "${pkgdir}/usr/bin/fwatch"
+
+      # license
+      install -Dm644 "./LICENSE" "${pkgdir}/usr/share/licenses/fwatch/LICENSE"
+
+      # documentation
+      install -Dm644 "./README.md" "${pkgdir}/usr/share/doc/fwatch/README.md"
+
+      # example config
+      install -Dm644 "./config.example.yaml" "${pkgdir}/usr/share/doc/fwatch/config.example.yaml"
+
+      # systemd service
+      install -Dm644 "./fwatch.service" "${pkgdir}/usr/share/doc/fwatch/fwatch.service"
+    conflicts:
+      - fwatch
+    provides:
+      - fwatch
+    depends:
+      - glibc

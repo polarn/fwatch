@@ -137,6 +137,13 @@ func watchDirectory(config *Config) error {
 			if event.Op&fsnotify.Create == fsnotify.Create || event.Op&fsnotify.Write == fsnotify.Write {
 				// Small delay to ensure file is fully written
 				time.Sleep(100 * time.Millisecond)
+
+				// Wait for file to be ready (not locked by another process)
+				if !waitForFile(event.Name, 5*time.Second) {
+					log.Printf("File is locked or unavailable, skipping: %s", event.Name)
+					continue
+				}
+
 				processFile(event.Name, extMap)
 			}
 
@@ -158,6 +165,35 @@ func buildExtensionMap(rules []Rule) map[string]string {
 		}
 	}
 	return extMap
+}
+
+// waitForFile waits for a file to be ready (not locked) by attempting to open it
+func waitForFile(filePath string, timeout time.Duration) bool {
+	deadline := time.Now().Add(timeout)
+	for time.Now().Before(deadline) {
+		// Try to open the file exclusively to check if it's locked
+		file, err := os.OpenFile(filePath, os.O_RDWR, 0)
+		if err == nil {
+			file.Close()
+			return true
+		}
+
+		// If file doesn't exist, it might have been moved already
+		if os.IsNotExist(err) {
+			return false
+		}
+
+		// Check if it's a permission/locking error
+		if strings.Contains(err.Error(), "being used by another process") ||
+			strings.Contains(err.Error(), "permission denied") {
+			time.Sleep(200 * time.Millisecond)
+			continue
+		}
+
+		// Other errors, give up
+		return false
+	}
+	return false
 }
 
 func processFile(filePath string, extMap map[string]string) {
@@ -275,10 +311,42 @@ func copyAndDelete(src, dst string) error {
 		return fmt.Errorf("syncing destination file: %w", err)
 	}
 
-	// Remove the source file
-	if err := os.Remove(src); err != nil {
+	// Close files before attempting delete
+	srcFile.Close()
+	dstFile.Close()
+
+	// Remove the source file with retries (for locked files on Windows)
+	return removeFileWithRetry(src, 3, 500*time.Millisecond)
+}
+
+// removeFileWithRetry attempts to remove a file with retries for locked files
+func removeFileWithRetry(path string, maxRetries int, delay time.Duration) error {
+	var lastErr error
+	for i := 0; i < maxRetries; i++ {
+		err := os.Remove(path)
+		if err == nil {
+			return nil
+		}
+
+		lastErr = err
+
+		// If file doesn't exist, consider it success
+		if os.IsNotExist(err) {
+			return nil
+		}
+
+		// Check if it's a lock/permission error
+		if strings.Contains(err.Error(), "being used by another process") ||
+			strings.Contains(err.Error(), "permission denied") {
+			if i < maxRetries-1 {
+				time.Sleep(delay)
+				continue
+			}
+		}
+
+		// Other errors, return immediately
 		return fmt.Errorf("removing source file: %w", err)
 	}
 
-	return nil
+	return fmt.Errorf("removing source file after %d retries: %w", maxRetries, lastErr)
 }

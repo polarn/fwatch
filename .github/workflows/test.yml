@@ -56,3 +56,10 @@ jobs:
           args: build --snapshot --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload binaries as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: fwatch-binaries-${{ github.sha }}
+          path: dist/fwatch_*
+          retention-days: 30

@@ -135,6 +135,15 @@ func watchDirectory(config *Config) error {
 
 			// Only process create and write events
 			if event.Op&fsnotify.Create == fsnotify.Create || event.Op&fsnotify.Write == fsnotify.Write {
+				// Skip partial/temporary download files early
+				fileName := filepath.Base(event.Name)
+				if strings.HasSuffix(strings.ToLower(fileName), ".part") ||
+					strings.HasSuffix(strings.ToLower(fileName), ".tmp") ||
+					strings.HasSuffix(strings.ToLower(fileName), ".crdownload") || // Chrome
+					strings.HasSuffix(strings.ToLower(fileName), ".download") {    // Safari
+					continue
+				}
+
 				// Small delay to ensure file is fully written
 				time.Sleep(100 * time.Millisecond)
 
@@ -170,11 +179,17 @@ func buildExtensionMap(rules []Rule) map[string]string {
 // waitForFile waits for a file to be ready (not locked) by attempting to open it
 func waitForFile(filePath string, timeout time.Duration) bool {
 	deadline := time.Now().Add(timeout)
+	attempts := 0
 	for time.Now().Before(deadline) {
+		attempts++
 		// Try to open the file exclusively to check if it's locked
 		file, err := os.OpenFile(filePath, os.O_RDWR, 0)
 		if err == nil {
 			file.Close()
+			// Log if we had to wait
+			if attempts > 1 {
+				log.Printf("File ready after %d attempts: %s", attempts, filepath.Base(filePath))
+			}
 			return true
 		}
 

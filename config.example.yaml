@@ -2,21 +2,43 @@
 # Copy this to config.yaml and customize
 
 # Directory to watch for new files
+# Linux/macOS example:
 watch_dir: "/home/your_username/Downloads"
+# Windows example (use double backslashes or forward slashes):
+# watch_dir: "C:\\Users\\YourName\\Downloads"
+# or
+# watch_dir: "C:/Users/YourName/Downloads"
 
 # File type routing rules
 # Extensions should include the dot (e.g., ".zip", ".pdf")
 rules:
-  - extensions: [".zip"]
-    destination: "/home/user/zip-archives"
-  - extensions: [".deb"]
-    destination: "/home/user/debian"
+  # Archives
+  - extensions: [".zip", ".tar", ".gz", ".7z", ".rar"]
+    destination: "/home/your_username/Archives"
+    # Windows: "C:\\Users\\YourName\\Archives"
+
+  # Linux packages
+  - extensions: [".deb", ".rpm", ".AppImage"]
+    destination: "/home/your_username/Packages"
+
+  # Windows installers (comment out on Linux/macOS)
+  # - extensions: [".exe", ".msi"]
+  #   destination: "C:\\Users\\YourName\\Installers"
+
+  # Documents
   - extensions: [".pdf", ".epub", ".mobi"]
     destination: "/home/your_username/Documents/Books"
-  - extensions: [".jpg", ".jpeg", ".png", ".gif"]
+    # Windows: "C:\\Users\\YourName\\Documents\\Books"
+
+  # Images
+  - extensions: [".jpg", ".jpeg", ".png", ".gif", ".webp"]
     destination: "/home/your_username/Pictures"
-  - extensions: [".mp3", ".flac", ".wav"]
+    # Windows: "C:\\Users\\YourName\\Pictures"
+
+  # Audio
+  - extensions: [".mp3", ".flac", ".wav", ".m4a"]
     destination: "/home/your_username/Music"
+    # Windows: "C:\\Users\\YourName\\Music"
 
 # Optional: Create destination directories if they don't exist
 create_dirs: true

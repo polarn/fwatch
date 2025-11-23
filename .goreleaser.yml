@@ -14,11 +14,15 @@ builds:
     goos:
       - linux
       - darwin
+      - windows
     ldflags:
       - -s -w -X main.version={{.Version}}
 
 archives:
-  - formats:
+  - format_overrides:
+      - goos: windows
+        format: zip
+    formats:
       - tar.gz
     # this name template makes the OS and Arch compatible with the results of `uname`.
     name_template: >-

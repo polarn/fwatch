@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
@@ -31,16 +32,24 @@ type Rule struct {
 }
 
 // getDefaultConfigPath returns the default configuration file path
-// using XDG_CONFIG_HOME or falling back to ~/.config
+// using platform-specific conventions
 func getDefaultConfigPath() string {
-	// Check XDG_CONFIG_HOME first
-	if configHome := os.Getenv("XDG_CONFIG_HOME"); configHome != "" {
-		return filepath.Join(configHome, "fwatch", "config.yaml")
-	}
-
-	// Fall back to ~/.config
-	if home := os.Getenv("HOME"); home != "" {
-		return filepath.Join(home, ".config", "fwatch", "config.yaml")
+	if runtime.GOOS == "windows" {
+		// Windows: use APPDATA or USERPROFILE
+		if appData := os.Getenv("APPDATA"); appData != "" {
+			return filepath.Join(appData, "fwatch", "config.yaml")
+		}
+		if userProfile := os.Getenv("USERPROFILE"); userProfile != "" {
+			return filepath.Join(userProfile, "fwatch", "config.yaml")
+		}
+	} else {
+		// Unix-like: use XDG_CONFIG_HOME or ~/.config
+		if configHome := os.Getenv("XDG_CONFIG_HOME"); configHome != "" {
+			return filepath.Join(configHome, "fwatch", "config.yaml")
+		}
+		if home := os.Getenv("HOME"); home != "" {
+			return filepath.Join(home, ".config", "fwatch", "config.yaml")
+		}
 	}
 
 	// Last resort: current directory
@@ -208,14 +217,30 @@ func moveFile(src, dst string) error {
 		return nil
 	}
 
-	// Check if it's a cross-device link error
-	// If so, fall back to copy + delete
-	if strings.Contains(err.Error(), "invalid cross-device link") {
+	// Check if it's a cross-device/cross-filesystem error
+	// Linux: "invalid cross-device link"
+	// Windows: ERROR_NOT_SAME_DEVICE or "The system cannot move the file to a different disk drive"
+	if isCrossDeviceError(err) {
 		return copyAndDelete(src, dst)
 	}
 
 	// For other errors, return them
 	return err
+}
+
+// isCrossDeviceError checks if the error indicates a cross-device/cross-filesystem operation
+func isCrossDeviceError(err error) bool {
+	errMsg := err.Error()
+	// Linux error message
+	if strings.Contains(errMsg, "invalid cross-device link") {
+		return true
+	}
+	// Windows error messages
+	if strings.Contains(errMsg, "not the same device") ||
+		strings.Contains(errMsg, "different disk drive") {
+		return true
+	}
+	return false
 }
 
 // copyAndDelete copies a file and then deletes the source

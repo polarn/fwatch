@@ -10,7 +10,9 @@ destination directories by extension. All logic lives in `main.go`.
 - `config.example.yaml` — reference config. Real config is
   `$XDG_CONFIG_HOME/fwatch/config.yaml`, else `~/.config/fwatch/config.yaml`.
 - `fwatch.service` — example systemd **user** unit (ExecStart `/usr/local/bin/fwatch`).
-- `.goreleaser.yml` — builds, archives, AUR (`fwatch-bin`) publishing.
+- `packaging/fwatch.service` — the unit shipped in the `.deb` (ExecStart `/usr/bin/fwatch`);
+  keep it in sync with the root one, which targets source installs.
+- `.goreleaser.yml` — builds, archives, `.deb` packages (nfpms), AUR (`fwatch-bin`) publishing.
 - `.github/workflows/` — `test.yml` (vet/test/build on PRs and main),
   `release.yml` (goreleaser, triggered by `X.Y.Z` tags).
 

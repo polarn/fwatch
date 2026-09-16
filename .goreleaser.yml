@@ -34,6 +34,32 @@ archives:
       - config.example.yaml
       - fwatch.service
 
+nfpms:
+  - id: fwatch
+    ids:
+      - fwatch
+    package_name: fwatch
+    vendor: polarn
+    homepage: "https://github.com/polarn/fwatch"
+    maintainer: "Marcus Johansson <polarn@gmail.com>"
+    description: "A lightweight, configurable file organizer that automatically moves files based on their extensions"
+    license: "Apache-2.0"
+    formats:
+      - deb
+    bindir: /usr/bin
+    section: utils
+    file_name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_{{ .Arch }}
+    contents:
+      - src: ./packaging/fwatch.service
+        dst: /usr/lib/systemd/user/fwatch.service
+      - src: ./config.example.yaml
+        dst: /usr/share/doc/fwatch/config.example.yaml
+      - src: ./README.md
+        dst: /usr/share/doc/fwatch/README.md
+      - src: ./LICENSE
+        dst: /usr/share/doc/fwatch/LICENSE
+
 snapshot:
   version_template: "{{ incpatch .Version }}-next"
 
@@ -57,6 +83,11 @@ release:
     **Arch Linux (AUR):**
     ```bash
     yay -S fwatch-bin
+    ```
+
+    **Debian/Ubuntu:**
+    ```bash
+    sudo dpkg -i fwatch_{{ trimprefix .Tag "v" }}_amd64.deb
     ```
 
     **Manual Installation:**

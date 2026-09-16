@@ -41,3 +41,5 @@ config.yaml
 # Logs
 *.log
 
+# GoReleaser output
+dist/

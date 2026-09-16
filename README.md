@@ -23,6 +23,21 @@ yay -S fwatch-bin
 paru -S fwatch-bin
 ```
 
+### Debian / Ubuntu
+
+Download the `.deb` for your architecture from the [releases page](https://github.com/polarn/fwatch/releases) and install it:
+
+```bash
+sudo dpkg -i fwatch_*_amd64.deb
+```
+
+The package installs the binary to `/usr/bin/fwatch` and a systemd **user** unit to
+`/usr/lib/systemd/user/fwatch.service`, so after configuring fwatch you can run:
+
+```bash
+systemctl --user enable --now fwatch.service
+```
+
 ### Pre-built Binaries
 
 Download the latest release for your platform from the [releases page](https://github.com/polarn/fwatch/releases).
@@ -99,6 +114,9 @@ systemctl --user status fwatch.service
 # View logs
 journalctl --user -u fwatch.service -f
 ```
+
+**Note:** The unit's `ExecStart` is `/usr/bin/fwatch`, where the deb and AUR packages install
+the binary. If you installed manually to `/usr/local/bin`, edit `ExecStart` to match.
 
 **Note:** Make sure you've already configured fwatch (see [Configuration](#configuration) section above) before starting the service.
 

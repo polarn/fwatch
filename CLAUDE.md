@@ -9,8 +9,10 @@ destination directories by extension. All logic lives in `main.go`.
   `moveFile` falls back to copy+delete on cross-device rename failures.
 - `config.example.yaml` — reference config. Real config is
   `$XDG_CONFIG_HOME/fwatch/config.yaml`, else `~/.config/fwatch/config.yaml`.
-- `fwatch.service` — example systemd **user** unit (ExecStart `/usr/local/bin/fwatch`).
-- `.goreleaser.yml` — builds, archives, AUR (`fwatch-bin`) publishing.
+- `fwatch.service` — the systemd **user** unit, single source of truth: shipped in the
+  archives, installed live by the `.deb` and as docs by the AUR package. ExecStart is
+  `/usr/bin/fwatch`, the path both packages install to.
+- `.goreleaser.yml` — builds, archives, `.deb` packages (nfpms), AUR (`fwatch-bin`) publishing.
 - `.github/workflows/` — `test.yml` (vet/test/build on PRs and main),
   `release.yml` (goreleaser, triggered by `X.Y.Z` tags).
 

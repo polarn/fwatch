@@ -48,11 +48,18 @@ jobs:
         with:
           go-version: '1.25'
 
-      - name: Run GoReleaser (build-only)
+      - name: Run GoReleaser (snapshot, builds .deb packages)
         uses: goreleaser/goreleaser-action@v6
         with:
           distribution: goreleaser
           version: '~> v2'
-          args: build --snapshot --clean
+          args: release --snapshot --clean --skip=publish,announce
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Debian packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: debian-packages
+          path: dist/*.deb
+          if-no-files-found: error

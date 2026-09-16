@@ -5,8 +5,9 @@ After=network.target
 
 [Service]
 Type=simple
-# Use absolute path to the fwatch binary
-ExecStart=/usr/local/bin/fwatch
+# Path the deb and AUR packages install the binary to.
+# Adjust if you installed manually to /usr/local/bin.
+ExecStart=/usr/bin/fwatch
 
 # Restart policy
 Restart=always

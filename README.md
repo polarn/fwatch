@@ -32,11 +32,17 @@ sudo dpkg -i fwatch_*_amd64.deb
 ```
 
 The package installs the binary to `/usr/bin/fwatch` and a systemd **user** unit to
-`/usr/lib/systemd/user/fwatch.service`, so after configuring fwatch you can run:
+`/usr/lib/systemd/user/fwatch.service`. Configure fwatch first, then enable the service:
 
 ```bash
+mkdir -p ~/.config/fwatch
+cp /usr/share/doc/fwatch/config.example.yaml ~/.config/fwatch/config.yaml
+# edit ~/.config/fwatch/config.yaml, then:
 systemctl --user enable --now fwatch.service
 ```
+
+On a headless machine, also enable lingering so the service starts at boot and keeps running
+after you log out — see [Run as Systemd Service](#run-as-systemd-service).
 
 ### Pre-built Binaries
 
@@ -63,7 +69,8 @@ sudo cp fwatch /usr/local/bin/
 
 By default, fwatch looks for its configuration file at `~/.config/fwatch/config.yaml` (or `$XDG_CONFIG_HOME/fwatch/config.yaml` if set).
 
-1. Create the config directory and copy the example configuration:
+1. Create the config directory and copy the example configuration (installed from the deb or
+   AUR package, the example is at `/usr/share/doc/fwatch/config.example.yaml`):
 ```bash
 mkdir -p ~/.config/fwatch
 cp config.example.yaml ~/.config/fwatch/config.yaml
@@ -118,7 +125,14 @@ journalctl --user -u fwatch.service -f
 **Note:** The unit's `ExecStart` is `/usr/bin/fwatch`, where the deb and AUR packages install
 the binary. If you installed manually to `/usr/local/bin`, edit `ExecStart` to match.
 
-**Note:** Make sure you've already configured fwatch (see [Configuration](#configuration) section above) before starting the service.
+**Note:** User services only run while you have an active login session. On a server, or any
+machine you log into rarely, enable lingering so fwatch starts at boot and survives logout:
+
+```bash
+sudo loginctl enable-linger $USER
+```
+
+**Note:** Make sure you've already configured fwatch (see [Configuration](#configuration) section above) before starting the service. fwatch exits if the config file is missing or invalid, and the unit restarts it every 10 seconds — `systemctl --user status fwatch.service` and the journal will show it flapping.
 
 ## Configuration Options
 

@@ -51,7 +51,7 @@ nfpms:
     file_name_template: >-
       {{ .ProjectName }}_{{ .Version }}_{{ .Arch }}
     contents:
-      - src: ./packaging/fwatch.service
+      - src: ./fwatch.service
         dst: /usr/lib/systemd/user/fwatch.service
       - src: ./config.example.yaml
         dst: /usr/share/doc/fwatch/config.example.yaml

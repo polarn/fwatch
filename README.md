@@ -115,6 +115,9 @@ systemctl --user status fwatch.service
 journalctl --user -u fwatch.service -f
 ```
 
+**Note:** The unit's `ExecStart` is `/usr/bin/fwatch`, where the deb and AUR packages install
+the binary. If you installed manually to `/usr/local/bin`, edit `ExecStart` to match.
+
 **Note:** Make sure you've already configured fwatch (see [Configuration](#configuration) section above) before starting the service.
 
 ## Configuration Options
